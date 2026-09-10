@@ -10,7 +10,14 @@
     "seed": "cd server && npm run seed",
     "build": "cd client && npm run build"
   },
-  "keywords": ["mern", "chat", "realtime", "socket.io", "react", "mongodb"],
+  "keywords": [
+    "mern",
+    "chat",
+    "realtime",
+    "socket.io",
+    "react",
+    "mongodb"
+  ],
   "author": "CONNECTX Team",
   "license": "MIT",
   "devDependencies": {

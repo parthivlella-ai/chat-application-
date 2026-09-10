@@ -14,12 +14,18 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && user?._id) {
       // Create new socket connection
-      const socketUrl = window.location.origin; // Vite proxy forwards /socket.io
+      const socketUrl =
+        import.meta.env.VITE_SERVER_URL ||
+        (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.startsWith('/')
+          ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+          : window.location.origin);
+
       const newSocket = io(socketUrl, {
         reconnection: true,
         reconnectionAttempts: 10,
         reconnectionDelay: 1000,
         timeout: 20000,
+        transports: ['websocket', 'polling'],
       });
 
       socketRef.current = newSocket;

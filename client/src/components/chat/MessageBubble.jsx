@@ -12,6 +12,19 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+const getMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
+    return url;
+  }
+  const serverUrl =
+    import.meta.env.VITE_SERVER_URL ||
+    (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.startsWith('/')
+      ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+      : '');
+  return serverUrl ? `${serverUrl.replace(/\/$/, '')}${url.startsWith('/') ? url : `/${url}`}` : url;
+};
+
 const MessageBubble = ({
   message,
   currentUserId,
@@ -84,14 +97,14 @@ const MessageBubble = ({
             <div style={{ marginBottom: message.text ? '8px' : '0' }}>
               {message.messageType === 'image' || message.attachment.fileType?.startsWith('image/') ? (
                 <img
-                  src={message.attachment.url}
+                  src={getMediaUrl(message.attachment.url)}
                   alt={message.attachment.fileName || 'Image attachment'}
                   className="message-image-preview"
-                  onClick={() => onImageClick(message.attachment.url)}
+                  onClick={() => onImageClick(getMediaUrl(message.attachment.url))}
                 />
               ) : (
                 <a
-                  href={message.attachment.url}
+                  href={getMediaUrl(message.attachment.url)}
                   download={message.attachment.fileName}
                   target="_blank"
                   rel="noreferrer"

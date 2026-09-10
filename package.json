@@ -1,0 +1,19 @@
+{
+  "name": "connectx-app",
+  "version": "1.0.0",
+  "description": "CONNECTX - Real-Time Chat & Messaging Application (MERN + Socket.IO)",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "seed": "cd server && npm run seed",
+    "build": "cd client && npm run build"
+  },
+  "keywords": ["mern", "chat", "realtime", "socket.io", "react", "mongodb"],
+  "author": "CONNECTX Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -24,20 +24,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const app = express();
 const server = http.createServer(app);
 
-// Connect to Database
-connectDB().then(async () => {
-  // Auto-seed if database has no users
-  try {
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      console.log('[Server] Database is empty. Running initial seed...');
-      await seedData();
-    }
-  } catch (err) {
-    console.error('[Server] Seed check error:', err.message);
-  }
-});
-
 // Configure Socket.IO
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 const io = new Server(server, {
@@ -114,10 +100,39 @@ app.get('/api/health', (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🚀 CONNECTX Server running in ${process.env.NODE_ENV || 'development'} mode`);
-  console.log(`📡 HTTP Server & Socket.IO active on port: ${PORT}`);
-  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
-  console.log(`====================================================`);
-});
+
+const startServer = async () => {
+  try {
+    // 1. Connect to Database first
+    await connectDB();
+
+    // 2. Auto-seed if database has no users
+    try {
+      const userCount = await User.countDocuments();
+      if (userCount === 0) {
+        console.log('[Server] Database is empty. Running initial seed...');
+        await seedData();
+      }
+    } catch (err) {
+      console.error('[Server] Seed check error:', err.message);
+    }
+
+    // 3. Start HTTP & WebSocket server
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`====================================================`);
+      console.log(`🚀 CONNECTX Server running in ${process.env.NODE_ENV || 'development'} mode`);
+      console.log(`📡 HTTP Server & Socket.IO active on port: ${PORT}`);
+      console.log(`🔗 API Base: http://localhost:${PORT}/api`);
+      console.log(`====================================================`);
+    });
+  } catch (error) {
+    console.error('[Server] Failed to initialize server:', error);
+    process.exit(1);
+  }
+};
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, server, startServer };

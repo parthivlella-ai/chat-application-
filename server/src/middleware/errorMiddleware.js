@@ -1,27 +1,28 @@
 const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
-  error.message = err.message;
-
   // Log to server console for debugging
   console.error('[Error Details]:', err);
 
+  const statusCode = err.statusCode || err.status || 500;
+  let message = err.message || 'An unexpected server error occurred. Please try again.';
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
-    const message = 'Resource not found or invalid identifier.';
-    return res.status(404).json({ success: false, message });
+    return res.status(404).json({ success: false, message: 'Resource not found or invalid identifier.' });
   }
 
   // Mongoose duplicate key
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    const message = `${field.charAt(0).toUpperCase() + field.slice(1)} is already registered.`;
-    return res.status(400).json({ success: false, message });
+    const field = Object.keys(err.keyValue || {})[0] || 'Field';
+    return res.status(400).json({
+      success: false,
+      message: `${field.charAt(0).toUpperCase() + field.slice(1)} is already registered.`,
+    });
   }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors).map((val) => val.message).join(', ');
-    return res.status(400).json({ success: false, message });
+    const msg = Object.values(err.errors || {}).map((val) => val.message).join(', ');
+    return res.status(400).json({ success: false, message: msg || 'Validation failed.' });
   }
 
   // JWT errors
@@ -33,9 +34,9 @@ const errorHandler = (err, req, res, next) => {
   }
 
   // Default server error
-  res.status(error.statusCode || 500).json({
+  res.status(statusCode).json({
     success: false,
-    message: error.message || 'An unexpected server error occurred. Please try again.',
+    message,
   });
 };
 

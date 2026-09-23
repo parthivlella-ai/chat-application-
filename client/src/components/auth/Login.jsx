@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MessageSquare, Lock, Mail, ArrowRight, Shield, Sparkles } from 'lucide-react';
+import { MessageSquare, Lock, Mail, ArrowRight, Shield, Sparkles, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -14,23 +15,29 @@ const Login = () => {
     e.preventDefault();
     if (!loginId || !password) return;
 
+    setErrorMsg('');
     setIsSubmitting(true);
     const result = await login(loginId, password);
     setIsSubmitting(false);
 
     if (result.success) {
       navigate('/chat');
+    } else {
+      setErrorMsg(result.message || 'Invalid credentials. Please try again.');
     }
   };
 
   const handleQuickLogin = async (email, pwd) => {
     setLoginId(email);
     setPassword(pwd);
+    setErrorMsg('');
     setIsSubmitting(true);
     const result = await login(email, pwd);
     setIsSubmitting(false);
     if (result.success) {
       navigate('/chat');
+    } else {
+      setErrorMsg(result.message || 'Failed to sign in with demo account.');
     }
   };
 
@@ -82,6 +89,28 @@ const Login = () => {
           </p>
         </div>
 
+        {/* Error Alert Banner */}
+        {errorMsg && (
+          <div
+            style={{
+              padding: '12px 14px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              color: '#ef4444',
+              fontSize: '0.875rem',
+              lineHeight: '1.4',
+              marginBottom: '18px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+            }}
+          >
+            <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -95,9 +124,12 @@ const Login = () => {
                 type="text"
                 className="input-control"
                 style={{ paddingLeft: '42px' }}
-                placeholder="e.g. alex@connectx.com or alexchen"
+                placeholder="e.g. alex@connectx.com or alex"
                 value={loginId}
-                onChange={(e) => setLoginId(e.target.value)}
+                onChange={(e) => {
+                  setLoginId(e.target.value);
+                  if (errorMsg) setErrorMsg('');
+                }}
                 required
               />
             </div>

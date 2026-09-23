@@ -75,7 +75,8 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { loginId, email, password } = req.body;
-    const identifier = (loginId || email || '').trim().toLowerCase();
+    const rawIdentifier = (loginId || email || '').trim();
+    const identifier = rawIdentifier.toLowerCase();
 
     if (!identifier || !password) {
       return res.status(400).json({
@@ -84,9 +85,22 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Find user by email or username
+    // Demo aliases for quick/convenient logins
+    const demoAliases = {
+      alex: 'alex@connectx.com',
+      sarah: 'sarah@connectx.com',
+      maya: 'maya@connectx.com',
+      liam: 'liam@connectx.com',
+    };
+    const targetEmail = demoAliases[identifier] || identifier;
+
+    // Find user by email, username, or alias
     const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
+      $or: [
+        { email: targetEmail },
+        { email: identifier },
+        { username: identifier },
+      ],
     }).select('+password');
 
     if (!user) {
